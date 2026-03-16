@@ -140,7 +140,7 @@ jobs:
         run: |
           echo "Updating kubeconfig for production cluster..."
           echo "Applying application via Helm..."
-          helm upgrade --install merchant-core-api ./merchant-core-api-chart -f ./merchant-core-api-chart/environments/production.yaml --namespace production --create-namespace --set image.repository=$ECR_REGISTRY/$ECR_REPOSITORY,image.tag=$IMAGE_TAG
+          echo "helm upgrade --install merchant-core-api ./merchant-core-api-chart -f ./merchant-core-api-chart/environments/production.yaml --namespace production --create-namespace --set image.repository=$ECR_REGISTRY/$ECR_REPOSITORY,image.tag=$IMAGE_TAG"
           # 
           # Alternatively, basic deployment strategy:
           # kubectl set image deployment/merchant-core-api core-api=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -n production

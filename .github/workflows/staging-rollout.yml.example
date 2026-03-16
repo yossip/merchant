@@ -31,7 +31,11 @@ jobs:
         echo "terraform -chdir=infra/terraform/01-core-eks init && terraform -chdir=infra/terraform/01-core-eks plan -var-file=../../environments/staging/01-core-eks.tfvars -out=tfplan_core"
         echo "terraform -chdir=infra/terraform/01-core-eks show -json tfplan_core > tfplan_core.json"
         
-        # Similar plan steps would exist for 02-routing-security and 03-observability
+        echo "terraform -chdir=infra/terraform/02-routing-security init && terraform -chdir=infra/terraform/02-routing-security plan -var-file=../../environments/staging/02-routing-security.tfvars -out=tfplan_routing"
+        echo "terraform -chdir=infra/terraform/02-routing-security show -json tfplan_routing > tfplan_routing.json"
+        
+        echo "terraform -chdir=infra/terraform/03-observability init && terraform -chdir=infra/terraform/03-observability plan -var-file=../../environments/staging/03-observability.tfvars -out=tfplan_observability"
+        echo "terraform -chdir=infra/terraform/03-observability show -json tfplan_observability > tfplan_observability.json"
 
     - name: Check for Resource Deletions
       run: |
@@ -43,8 +47,8 @@ jobs:
       run: |
         echo "Applying the approved Terraform Plans..."
         echo "terraform -chdir=infra/terraform/01-core-eks apply tfplan_core"
-        echo "terraform -chdir=infra/terraform/02-routing-security apply -var-file=../../environments/staging/02-routing-security.tfvars -auto-approve"
-        echo "terraform -chdir=infra/terraform/03-observability apply -var-file=../../environments/staging/03-observability.tfvars -auto-approve"
+        echo "terraform -chdir=infra/terraform/02-routing-security apply tfplan_routing"
+        echo "terraform -chdir=infra/terraform/03-observability apply tfplan_observability"
 
     - name: Deploy to Staging EKS
       run: |

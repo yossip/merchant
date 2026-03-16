@@ -24,8 +24,6 @@ provider "aws" {
   }
 }
 
-variable "aws_region" { default = "us-east-1" }
-variable "environment" { default = "prod" }
 
 # In a real setup, we use terraform_remote_state to get the EKS cluster data
 # data "terraform_remote_state" "eks" { ... }
@@ -80,6 +78,11 @@ resource "aws_cloudfront_distribution" "merchant_cdn" {
     cached_methods   = ["GET", "HEAD"]
     target_origin_id = "EKS-ALB-Origin"
     viewer_protocol_policy = "redirect-to-https"
+
+    forwarded_values {
+      query_string = true
+      cookies { forward = "all" }
+    }
 
     lambda_function_association {
       event_type   = "viewer-request"

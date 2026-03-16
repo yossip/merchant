@@ -20,6 +20,14 @@ jobs:
     - name: Lint and Unit Tests
       run: |
         echo "Running linters..."
+        
+        echo "Running Helm linter..."
+        helm lint ./charts/devops-base-chart
+        helm lint ./merchant-core-api-chart
+        
+        echo "Running Terraform formatting check..."
+        terraform fmt -check -recursive infra/terraform
+        
         echo "Running fast unit tests..."
 
     - name: Build and Push Base Docker Image

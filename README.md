@@ -22,7 +22,7 @@ graph TD
     User([End User]) --> DNS[Route 53]
     DNS --> CF[CloudFront Distribution]
     CF --> WAF[AWS WAF]
-    CF -- Edge Auth --> LE[Lambda@Edge<br>JWT Validator]
+    CF -- Edge Auth --> LE["Lambda@Edge<br>JWT Validator"]
     CF --> ALB[Application Load Balancer]
     ALB --> EKS[Amazon EKS Cluster]
     

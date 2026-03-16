@@ -40,7 +40,7 @@ sequenceDiagram
     participant R53 as Route 53
     participant CF as CloudFront
     participant WAF as AWS WAF
-    participant LEd as Lambda@Edge (Auth)
+    participant LEd as "Lambda@Edge (Auth)"
     participant ALB as Application Load Balancer
     participant EKS as Ingress / Microservices
     participant DB as RDS / DynamoDB

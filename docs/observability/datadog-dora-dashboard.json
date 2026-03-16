@@ -1,0 +1,82 @@
+{
+  "title": "DORA Metrics - Merchant Platform",
+  "description": "Tracks the four DORA key metrics plus security and development error rates across all environments.",
+  "widgets": [
+    {
+      "definition": {
+        "title": "Deployment Frequency (per day)",
+        "type": "timeseries",
+        "requests": [
+          {
+            "q": "sum:dora.deployment.frequency{service:merchant-core-api} by {environment}.as_count().rollup(sum, 86400)",
+            "display_type": "bars",
+            "style": { "palette": "cool" }
+          }
+        ]
+      }
+    },
+    {
+      "definition": {
+        "title": "Lead Time to Production (seconds)",
+        "type": "timeseries",
+        "requests": [
+          {
+            "q": "avg:dora.lead_time.seconds{environment:production,service:merchant-core-api}",
+            "display_type": "line",
+            "style": { "palette": "orange" }
+          }
+        ]
+      }
+    },
+    {
+      "definition": {
+        "title": "Change Failure Rate",
+        "type": "query_value",
+        "requests": [
+          {
+            "q": "100 * sum:dora.change_failure.count{service:merchant-core-api}.as_count() / sum:dora.deployment.frequency{service:merchant-core-api}.as_count()",
+            "aggregator": "avg"
+          }
+        ],
+        "precision": 1,
+        "custom_unit": "%"
+      }
+    },
+    {
+      "definition": {
+        "title": "Development Errors (by environment)",
+        "type": "timeseries",
+        "requests": [
+          {
+            "q": "sum:dora.development.error_count{service:merchant-core-api} by {environment}",
+            "display_type": "bars",
+            "style": { "palette": "warm" }
+          }
+        ]
+      }
+    },
+    {
+      "definition": {
+        "title": "Security Rejections (SAST/SCA/DAST)",
+        "type": "timeseries",
+        "requests": [
+          {
+            "q": "sum:dora.security.rejection_count{service:merchant-core-api} by {environment}.as_count()",
+            "display_type": "bars",
+            "style": { "palette": "red" }
+          }
+        ]
+      }
+    },
+    {
+      "definition": {
+        "title": "Deployment Events Timeline",
+        "type": "event_timeline",
+        "query": "source:github_actions tags:service:merchant-core-api"
+      }
+    }
+  ],
+  "layout_type": "ordered",
+  "notify_list": [],
+  "tags": ["team:platform-engineering", "service:merchant-core-api"]
+}

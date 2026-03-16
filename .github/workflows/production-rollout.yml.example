@@ -145,3 +145,25 @@ jobs:
           # Alternatively, basic deployment strategy:
           # kubectl set image deployment/merchant-core-api core-api=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -n production
           # kubectl rollout status deployment/merchant-core-api -n production --timeout=300s
+
+      # ---- DORA Metrics ----
+      - name: Calculate Lead Time to Production
+        id: lead_time
+        run: |
+          # Lead time = seconds between first commit on the feature branch and production deploy
+          echo "FIRST_COMMIT_TS=$(git log --reverse --format=%ct | head -1)" >> $GITHUB_ENV
+          echo "DEPLOY_TS=$(date +%s)" >> $GITHUB_ENV
+
+      - name: Emit DORA Metrics (Datadog + Coralogix)
+        if: always()
+        env:
+          DD_API_KEY: ${{ secrets.DD_API_KEY }}
+          DORA_ENVIRONMENT: production
+          DORA_EVENT_TYPE: ${{ job.status == 'success' && 'deploy_succeeded' || 'deploy_failed' }}
+          DORA_COMMIT_SHA: ${{ github.sha }}
+          DORA_PIPELINE_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          DORA_LEAD_TIME_SECONDS: ${{ env.DEPLOY_TS && env.FIRST_COMMIT_TS && format('{0}', fromJSON(env.DEPLOY_TS) - fromJSON(env.FIRST_COMMIT_TS)) || '0' }}
+          DORA_ERROR_COUNT: "0"
+          DORA_SECURITY_REJECTS: "0"
+        run: |
+          echo "bash scripts/emit-dora-metrics.sh"

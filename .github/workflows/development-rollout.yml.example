@@ -60,3 +60,25 @@ jobs:
     - name: Run Basic Health Checks
       run: |
         echo "Checking application health endpoints..."
+
+    # ---- DORA Metrics ----
+    - name: Calculate Lead Time
+      id: lead_time
+      run: |
+        # Lead time = seconds since first commit on branch until now
+        echo "FIRST_COMMIT_TS=$(git log --reverse --format=%ct | head -1)" >> $GITHUB_ENV
+        echo "DEPLOY_TS=$(date +%s)" >> $GITHUB_ENV
+
+    - name: Emit DORA Metrics (Datadog + Coralogix)
+      if: always()
+      env:
+        DD_API_KEY: ${{ secrets.DD_API_KEY }}
+        DORA_ENVIRONMENT: development
+        DORA_EVENT_TYPE: ${{ job.status == 'success' && 'deploy_succeeded' || 'deploy_failed' }}
+        DORA_COMMIT_SHA: ${{ github.sha }}
+        DORA_PIPELINE_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        DORA_LEAD_TIME_SECONDS: ${{ env.DEPLOY_TS && env.FIRST_COMMIT_TS && format('{0}', fromJSON(env.DEPLOY_TS) - fromJSON(env.FIRST_COMMIT_TS)) || '0' }}
+        DORA_ERROR_COUNT: ${{ job.status == 'failure' && '1' || '0' }}
+        DORA_SECURITY_REJECTS: "0"
+      run: |
+        echo "bash scripts/emit-dora-metrics.sh"

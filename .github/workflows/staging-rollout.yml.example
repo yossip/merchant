@@ -64,3 +64,18 @@ jobs:
     - name: Run Performance and Load Tests
       run: |
         echo "Executing load tests against staging environment..."
+
+    # ---- DORA Metrics ----
+    - name: Emit DORA Metrics (Datadog + Coralogix)
+      if: always()
+      env:
+        DD_API_KEY: ${{ secrets.DD_API_KEY }}
+        DORA_ENVIRONMENT: staging
+        DORA_EVENT_TYPE: ${{ job.status == 'success' && 'deploy_succeeded' || 'security_rejected' }}
+        DORA_COMMIT_SHA: ${{ github.sha }}
+        DORA_PIPELINE_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        DORA_LEAD_TIME_SECONDS: "0"
+        DORA_ERROR_COUNT: "0"
+        DORA_SECURITY_REJECTS: ${{ job.status == 'failure' && '1' || '0' }}
+      run: |
+        echo "bash scripts/emit-dora-metrics.sh"

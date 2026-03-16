@@ -1,6 +1,6 @@
-# B2C Merchant Solution Infrastructure
+# Merchant Solution Infrastructure
 
-Welcome to the infrastructure repository for the modern B2C Merchant Solution. This repository defines the foundational architecture, deployment pipelines, and security guardrails necessary to run a highly available, secure, and globally distributed e-commerce platform.
+Welcome to the infrastructure repository for the modern Merchant Solution. This repository defines the foundational architecture, deployment pipelines, and security guardrails necessary to run a highly available, secure, and globally distributed e-commerce platform.
 
 ## Architecture Overview
 

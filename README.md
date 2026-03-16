@@ -83,12 +83,12 @@ graph LR
     STG -->|Manual Approval| PROD["Production<br>Canary + HPA"]
 ```
 
-| Stage | Build | Security | Deploy | DORA Tracked |
-|-------|-------|----------|--------|-------------|
-| **Development** | ✅ Docker build + ECR push | — | Helm + CPU HPA | Errors, Lead Time |
-| **Integration** | ❌ Promote only | SAST, SCA (Trivy) | Helm + CPU HPA | Security Rejects |
-| **Staging** | ❌ Promote only | DAST (ZAP) | Helm + CPU HPA | Security Rejects |
-| **Production** | ❌ Promote only | Container scan | Helm + **Datadog Latency HPA** | Deploy Freq, Lead Time |
+| Stage | Build | Security | Testing | Deploy | DORA Tracked |
+|-------|-------|----------|---------|--------|-------------|
+| **Development** | ✅ Docker build + ECR push | — | Unit tests, Linting | Helm + CPU HPA | Errors, Lead Time |
+| **Integration** | ❌ Promote only | SAST, SCA (Trivy) | Regression + Progression | Helm + CPU HPA | Security Rejects |
+| **Staging** | ❌ Promote only | DAST (ZAP) | Regression + Progression + Load | Helm + CPU HPA | Security Rejects |
+| **Production** | ❌ Promote only | Container scan | Post-deploy Regression (Canary) | Helm + **Datadog Latency HPA** | Deploy Freq, Lead Time |
 
 ## High Availability
 

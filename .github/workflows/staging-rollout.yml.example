@@ -61,6 +61,19 @@ jobs:
         echo "Running OWASP ZAP or Burp Suite against the lively deployed staging environment..."
         echo "Checking for runtime vulnerabilities (e.g., XSS, SQLi)..."
 
+    - name: Regression Tests
+      run: |
+        echo "Running full regression suite against staging environment..."
+        echo "Validating all critical paths: authentication, catalog browsing, cart operations, order placement..."
+        echo "Checking backward compatibility with previous API versions..."
+        echo "Verifying data integrity across service boundaries..."
+
+    - name: Progression Tests
+      run: |
+        echo "Running progression tests for new features in staging..."
+        echo "Validating feature rollout behavior under realistic conditions..."
+        echo "Testing new endpoints with production-like data volumes..."
+
     - name: Run Performance and Load Tests
       run: |
         echo "Executing load tests against staging environment..."

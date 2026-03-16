@@ -53,6 +53,19 @@ jobs:
       run: |
         echo "Running automated E2E and API integration tests..."
 
+    - name: Regression Tests
+      run: |
+        echo "Running regression test suite against integration environment..."
+        echo "Verifying existing API contracts have not been broken..."
+        echo "Validating backward compatibility of request/response schemas..."
+        echo "Running smoke tests on critical user flows (auth, catalog, cart, checkout)..."
+
+    - name: Progression Tests
+      run: |
+        echo "Running progression test suite for new features..."
+        echo "Validating new feature flags and endpoints introduced in this release..."
+        echo "Asserting new business logic produces expected outputs..."
+
     # ---- DORA Metrics ----
     - name: Emit DORA Metrics (Datadog + Coralogix)
       if: always()

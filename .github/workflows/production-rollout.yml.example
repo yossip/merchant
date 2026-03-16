@@ -150,6 +150,14 @@ jobs:
           # kubectl set image deployment/merchant-core-api core-api=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -n production
           # kubectl rollout status deployment/merchant-core-api -n production --timeout=300s
 
+      - name: Post-Deploy Regression Tests (Canary Validation)
+        run: |
+          echo "Running production regression smoke tests against canary pods..."
+          echo "Validating critical user flows: authentication, catalog, cart, checkout..."
+          echo "Verifying API response schemas match expected contracts..."
+          echo "Checking latency thresholds are within SLA bounds..."
+          echo "If regression failures are detected, trigger automatic rollback."
+
       # ---- DORA Metrics ----
       - name: Calculate Lead Time to Production
         id: lead_time

@@ -1,0 +1,49 @@
+# ==============================================================================
+# DevOps-Managed Base Image
+# ==============================================================================
+# This Dockerfile defines the standard base image that all service containers
+# inherit from. It establishes security, observability, and runtime defaults
+# that DevOps controls centrally.
+#
+# Build: docker build -t merchant-base:latest -f docker/Dockerfile.base .
+# ==============================================================================
+
+FROM node:20-alpine AS base
+
+# ---- Security hardening ----
+# Run as non-root user
+RUN addgroup -g 1001 -S appgroup && \
+    adduser -u 1001 -S appuser -G appgroup
+
+# ---- OS-level dependencies & security patches ----
+RUN apk update && \
+    apk upgrade --no-cache && \
+    apk add --no-cache \
+      curl \
+      tini \
+      dumb-init && \
+    rm -rf /var/cache/apk/*
+
+# ---- Standard directory structure ----
+RUN mkdir -p /app/logs /app/tmp && \
+    chown -R appuser:appgroup /app
+
+WORKDIR /app
+
+# ---- Health check defaults (overridable by services) ----
+HEALTHCHECK --interval=30s --timeout=5s --start-period=10s --retries=3 \
+  CMD curl -f http://localhost:${PORT:-3000}/health || exit 1
+
+# ---- Default environment variables ----
+ENV NODE_ENV=production \
+    PORT=3000 \
+    LOG_FORMAT=json \
+    LOG_LEVEL=info
+
+# ---- Use tini as PID 1 for proper signal handling ----
+ENTRYPOINT ["/sbin/tini", "--"]
+
+# ---- Drop to non-root ----
+USER appuser
+
+EXPOSE 3000

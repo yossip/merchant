@@ -1,0 +1,6 @@
+dependencies:
+- name: devops-base-chart
+  repository: file://../charts/devops-base-chart
+  version: 0.1.0
+digest: sha256:33d594a8a88003866ddaff1821f36bd732e98db78b82122edf45dd42e5c0f5e7
+generated: "2026-03-16T08:04:33.998027+02:00"

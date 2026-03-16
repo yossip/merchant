@@ -1,0 +1,16 @@
+# Docker build artifacts
+**/node_modules
+**/dist
+**/.git
+**/.github
+**/.agents
+**/docs
+**/infra
+**/merchant-core-api-chart
+**/charts
+**/.helmignore
+**/*.md
+**/.env*
+**/coverage
+**/.nyc_output
+**/tmp

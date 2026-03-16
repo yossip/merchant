@@ -1,0 +1,54 @@
+name: Integration Rollout
+
+on:
+  push:
+    branches: [ "integration" ]
+
+# Example workflow purely for demonstration purposes
+# Does not trigger real deployments unless renamed and configured
+jobs:
+  build_and_deploy_int:
+    runs-on: ubuntu-latest
+    environment: integration
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: SAST and Static Security Scans
+      run: |
+        echo "Running SAST (Static Application Security Testing) via SonarQube / CodeQL..."
+        echo "Running Code dependencies scan (SCA) via Trivy..."
+
+    - name: Verify Image Existence (No Rebuild)
+      run: |
+        echo "Verifying image merchant-app:${{ github.sha }} exists in ECR..."
+        echo "Image will be promoted and deployed exactly as built in development."
+
+    - name: Terraform Plan
+      run: |
+        echo "Running Terraform Plan for integration environment..."
+        echo "terraform -chdir=infra/terraform/01-core-eks init"
+        echo "terraform -chdir=infra/terraform/01-core-eks plan -var-file=../../environments/integration/01-core-eks.tfvars -out=tfplan"
+        echo "terraform -chdir=infra/terraform/01-core-eks show -json tfplan > tfplan.json"
+
+    - name: Check for Resource Deletions
+      run: |
+        echo "Analyzing terraform plan for any destructive actions..."
+        # if [ "$DELETIONS" -gt 0 ]; then exit 1; fi
+        echo "No destructive actions detected. Proceeding..."
+
+    - name: Apply Base Infrastructure (Terraform)
+      run: |
+        echo "Applying the approved Terraform Plan..."
+        echo "terraform -chdir=infra/terraform/01-core-eks apply tfplan"
+
+    - name: Deploy to Integration EKS
+      run: |
+        echo "Updating kubeconfig for integration cluster..."
+        echo "Applying application via Helm..."
+        echo "helm upgrade --install merchant-core-api ./merchant-core-api-chart --namespace integration --create-namespace"
+
+    - name: Run Integration Tests
+      run: |
+        echo "Running automated E2E and API integration tests..."

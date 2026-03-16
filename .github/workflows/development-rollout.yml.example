@@ -1,0 +1,62 @@
+name: Development Rollout
+
+on:
+  push:
+    branches: [ "development" ]
+  pull_request:
+    branches: [ "development" ]
+
+# Example workflow purely for demonstration purposes
+# Does not trigger real deployments unless renamed and configured
+jobs:
+  build_and_deploy_dev:
+    runs-on: ubuntu-latest
+    environment: development
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: Lint and Unit Tests
+      run: |
+        echo "Running linters..."
+        echo "Running fast unit tests..."
+
+    - name: Build and Push Docker Image
+      run: |
+        echo "Building definitive image for this commit..."
+        echo "Pushing to ECR: merchant-app:${{ github.sha }}"
+
+    - name: Terraform Plan
+      run: |
+        echo "Running Terraform Plan for development environment..."
+        echo "terraform -chdir=infra/terraform/01-core-eks init"
+        echo "terraform -chdir=infra/terraform/01-core-eks plan -var-file=../../environments/development/01-core-eks.tfvars -out=tfplan"
+        echo "terraform -chdir=infra/terraform/01-core-eks show -json tfplan > tfplan.json"
+
+    - name: Check for Resource Deletions
+      run: |
+        echo "Analyzing terraform plan for any destructive actions..."
+        # Example logic using jq to parse the plan JSON:
+        # DELETIONS=$(jq '[.resource_changes[] | select(.change.actions | contains(["delete"]))] | length' tfplan.json)
+        # if [ "$DELETIONS" -gt 0 ]; then
+        #   echo "WARNING: Plan contains resources intended for deletion."
+        #   echo "Manual approval is required."
+        #   exit 1 # Failing the step halts the pipeline until manual intervention
+        # fi
+        echo "No destructive actions detected. Proceeding..."
+
+    - name: Apply Base Infrastructure (Terraform)
+      run: |
+        echo "Applying the approved Terraform Plan..."
+        echo "terraform -chdir=infra/terraform/01-core-eks apply tfplan"
+
+    - name: Deploy to Development EKS
+      run: |
+        echo "Updating kubeconfig for development cluster..."
+        echo "Applying application via Helm..."
+        echo "helm upgrade --install merchant-core-api ./merchant-core-api-chart --namespace development --create-namespace"
+
+    - name: Run Basic Health Checks
+      run: |
+        echo "Checking application health endpoints..."

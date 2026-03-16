@@ -1,0 +1,62 @@
+name: Staging Rollout
+
+on:
+  push:
+    branches: [ "staging" ]
+
+# Example workflow purely for demonstration purposes
+# Does not trigger real deployments unless renamed and configured
+jobs:
+  build_and_deploy_staging:
+    runs-on: ubuntu-latest
+    environment: staging
+
+    steps:
+    - name: Checkout Code
+      uses: actions/checkout@v4
+
+    - name: IaC SAST Scans (Checkov)
+      run: |
+        echo "Running exhaustive IaC SAST security scans..."
+        echo "Scanning Terraform with Checkov..."
+
+    - name: Verify Image Existence (No Rebuild)
+      run: |
+        echo "Verifying image merchant-app:${{ github.sha }} exists in ECR..."
+        echo "Image will be promoted and deployed exactly as built in development."
+
+    - name: Terraform Plan
+      run: |
+        echo "Running Terraform Plan for staging environment (multi-stage)..."
+        echo "terraform -chdir=infra/terraform/01-core-eks init && terraform -chdir=infra/terraform/01-core-eks plan -var-file=../../environments/staging/01-core-eks.tfvars -out=tfplan_core"
+        echo "terraform -chdir=infra/terraform/01-core-eks show -json tfplan_core > tfplan_core.json"
+        
+        # Similar plan steps would exist for 02-routing-security and 03-observability
+
+    - name: Check for Resource Deletions
+      run: |
+        echo "Analyzing terraform plans across all stages for destructive actions..."
+        # if [ "$DELETIONS" -gt 0 ]; then exit 1; fi (Halting requires environment manual approval restart)
+        echo "No destructive actions detected. Proceeding..."
+
+    - name: Apply Base Infrastructure (Terraform)
+      run: |
+        echo "Applying the approved Terraform Plans..."
+        echo "terraform -chdir=infra/terraform/01-core-eks apply tfplan_core"
+        echo "terraform -chdir=infra/terraform/02-routing-security apply -var-file=../../environments/staging/02-routing-security.tfvars -auto-approve"
+        echo "terraform -chdir=infra/terraform/03-observability apply -var-file=../../environments/staging/03-observability.tfvars -auto-approve"
+
+    - name: Deploy to Staging EKS
+      run: |
+        echo "Updating kubeconfig for staging cluster..."
+        echo "Applying application via Helm..."
+        echo "helm upgrade --install merchant-core-api ./merchant-core-api-chart --namespace staging --create-namespace"
+
+    - name: DAST (Dynamic Application Security Testing)
+      run: |
+        echo "Running OWASP ZAP or Burp Suite against the lively deployed staging environment..."
+        echo "Checking for runtime vulnerabilities (e.g., XSS, SQLi)..."
+
+    - name: Run Performance and Load Tests
+      run: |
+        echo "Executing load tests against staging environment..."

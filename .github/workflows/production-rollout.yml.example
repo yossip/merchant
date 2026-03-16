@@ -51,7 +51,7 @@ jobs:
         uses: hashicorp/setup-terraform@v3
 
       - name: Terraform Init & Plan
-        working-directory: ./infra/terraform
+        working-directory: ./infra/terraform/01-core-eks
         run: |
           terraform init
           terraform plan -out=tfplan.binary
@@ -63,7 +63,7 @@ jobs:
       - name: Evaluate Guardrails (Rego)
         working-directory: ./infra
         run: |
-          opa eval --fail-defined --format pretty -i terraform/tfplan.json -d policies/guardrails.rego "data.infra.guardrails.deny"
+          opa eval --fail-defined --format pretty -i terraform/01-core-eks/tfplan.json -d policies/guardrails.rego "data.infra.guardrails.deny"
 
   verify-and-scan-image:
     name: Verify & Scan Image
@@ -121,6 +121,10 @@ jobs:
 
       - name: Update Kubeconfig
         run: aws eks update-kubeconfig --name ${{ env.EKS_CLUSTER_NAME }} --region ${{ env.AWS_REGION }}
+
+      - name: Login to Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
 
       - name: Verify EKS Auto AI Capabilities (Pre-Canary Check)
         run: |

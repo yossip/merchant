@@ -65,9 +65,23 @@ jobs:
         run: |
           opa eval --fail-defined --format pretty -i terraform/01-core-eks/tfplan.json -d policies/guardrails.rego "data.infra.guardrails.deny"
 
+  helm-sanity-check:
+    name: Helm Chart Sanity Check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Helm
+        uses: azure/setup-helm@v4
+        with:
+          version: v3.14.0
+      - name: Enforce Library Chart Compliance
+        run: |
+          helm dependency update ./merchant-core-api-chart
+          bash scripts/helm-chart-sanity-check.sh ./merchant-core-api-chart
+
   verify-and-scan-image:
     name: Verify & Scan Image
-    needs: [test-and-scan, infra-guardrails]
+    needs: [test-and-scan, infra-guardrails, helm-sanity-check]
     if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:

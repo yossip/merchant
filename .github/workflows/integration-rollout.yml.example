@@ -20,6 +20,12 @@ jobs:
         echo "Running SAST (Static Application Security Testing) via SonarQube / CodeQL..."
         echo "Running Code dependencies scan (SCA) via Trivy..."
 
+    - name: Helm Chart Sanity Check
+      run: |
+        echo "Enforcing DevOps library chart compliance for integration..."
+        echo "helm dependency update ./merchant-core-api-chart"
+        echo "bash scripts/helm-chart-sanity-check.sh ./merchant-core-api-chart"
+
     - name: Verify Image Existence (No Rebuild)
       run: |
         echo "Verifying image merchant-app:${{ github.sha }} exists in ECR..."

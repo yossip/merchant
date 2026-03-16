@@ -22,10 +22,17 @@ jobs:
         echo "Running linters..."
         echo "Running fast unit tests..."
 
-    - name: Build and Push Docker Image
+    - name: Build and Push Base Docker Image
       run: |
-        echo "Building definitive image for this commit..."
-        echo "Pushing to ECR: merchant-app:${{ github.sha }}"
+        echo "Building DevOps-managed base image..."
+        echo "docker build -t merchant-base:latest -f docker/Dockerfile.base ."
+        echo "Pushing to ECR: merchant-base:latest"
+
+    - name: Build and Push Application Docker Image
+      run: |
+        echo "Building merchant-core-api image (inherits from merchant-base)..."
+        echo "docker build -t merchant-core-api:${{ github.sha }} -f Dockerfile ."
+        echo "Pushing to ECR: merchant-core-api:${{ github.sha }}"
 
     - name: Terraform Plan
       run: |
@@ -54,6 +61,8 @@ jobs:
     - name: Deploy to Development EKS
       run: |
         echo "Updating kubeconfig for development cluster..."
+        echo "Building Helm chart dependencies..."
+        echo "helm dependency update ./merchant-core-api-chart"
         echo "Applying application via Helm..."
         echo "helm upgrade --install merchant-core-api ./merchant-core-api-chart -f ./merchant-core-api-chart/environments/development.yaml --namespace development --create-namespace"
 

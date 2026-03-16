@@ -1,10 +1,1 @@
-{{- if and .Values.autoscaling.enabled .Values.autoscaling.datadogMetric.enabled }}
-apiVersion: datadoghq.com/v1alpha1
-kind: DatadogMetric
-metadata:
-  name: {{ include "merchant-core-api-chart.fullname" . }}-latency
-  labels:
-    {{- include "merchant-core-api-chart.labels" . | nindent 4 }}
-spec:
-  query: {{ .Values.autoscaling.datadogMetric.query | quote }}
-{{- end }}
+{{- include "devops-base.datadogmetric" . }}

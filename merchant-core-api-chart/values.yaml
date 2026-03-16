@@ -1,41 +1,39 @@
-# Default values for merchant-core-api-chart.
-# This is a YAML-formatted file.
-# Declare variables to be passed into your templates.
+# Merchant Core API - Values
+# Inherits templates from the DevOps-managed base chart (charts/devops-base-chart/).
+# All values must be defined here since Helm library charts do not auto-surface
+# their values.yaml to consuming charts. The library provides the TEMPLATES;
+# this file provides the VALUES.
 
-# This will set the replicaset count more information can be found here: https://kubernetes.io/docs/concepts/workloads/controllers/replicaset/
+# --------------------------------------------------------------------------
+# Replica Configuration
+# --------------------------------------------------------------------------
 replicaCount: 3
 
-# This sets the container image more information can be found here: https://kubernetes.io/docs/concepts/containers/images/
+# --------------------------------------------------------------------------
+# Container Image
+# --------------------------------------------------------------------------
 image:
   repository: nginx
-  # This sets the pull policy for images.
   pullPolicy: IfNotPresent
-  # Overrides the image tag whose default is the chart appVersion.
   tag: ""
 
-# This is for the secrets for pulling an image from a private repository more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/pull-image-private-registry/
 imagePullSecrets: []
-# This is to override the chart name.
 nameOverride: ""
 fullnameOverride: ""
 
-# This section builds out the service account more information can be found here: https://kubernetes.io/docs/concepts/security/service-accounts/
+# --------------------------------------------------------------------------
+# Service Account
+# --------------------------------------------------------------------------
 serviceAccount:
-  # Specifies whether a service account should be created.
   create: true
-  # Automatically mount a ServiceAccount's API credentials?
   automount: true
-  # Annotations to add to the service account.
   annotations: {}
-  # The name of the service account to use.
-  # If not set and create is true, a name is generated using the fullname template.
   name: ""
 
-# This is for setting Kubernetes Annotations to a Pod.
-# For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/annotations/
+# --------------------------------------------------------------------------
+# Pod Metadata
+# --------------------------------------------------------------------------
 podAnnotations: {}
-# This is for setting Kubernetes Labels to a Pod.
-# For more information checkout: https://kubernetes.io/docs/concepts/overview/working-with-objects/labels/
 podLabels: {}
 
 podSecurityContext: {}
@@ -49,68 +47,47 @@ securityContext: {}
   # runAsNonRoot: true
   # runAsUser: 1000
 
-# This is for setting up a service more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/
+# --------------------------------------------------------------------------
+# Service
+# --------------------------------------------------------------------------
 service:
-  # This sets the service type more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#publishing-services-service-types
   type: ClusterIP
-  # This sets the ports more information can be found here: https://kubernetes.io/docs/concepts/services-networking/service/#field-spec-ports
   port: 80
 
-# This block is for setting up the ingress for more information can be found here: https://kubernetes.io/docs/concepts/services-networking/ingress/
+# --------------------------------------------------------------------------
+# Ingress
+# --------------------------------------------------------------------------
 ingress:
   enabled: false
   className: ""
   annotations: {}
-    # kubernetes.io/ingress.class: nginx
-    # kubernetes.io/tls-acme: "true"
   hosts:
     - host: chart-example.local
       paths:
         - path: /
           pathType: ImplementationSpecific
   tls: []
-    # - secretName: chart-example-tls
-    #   hosts:
-    #     - chart-example.local
 
-# -- Expose the service via gateway-api HTTPRoute
-# Requires Gateway API resources and suitable controller installed within the cluster
-# (see: https://gateway-api.sigs.k8s.io/guides/)
+# --------------------------------------------------------------------------
+# HTTPRoute (Gateway API)
+# --------------------------------------------------------------------------
 httpRoute:
-  # HTTPRoute enabled.
   enabled: false
-  # HTTPRoute annotations.
   annotations: {}
-  # Which Gateways this Route is attached to.
   parentRefs:
   - name: gateway
     sectionName: http
-    # namespace: default
-  # Hostnames matching HTTP header.
   hostnames:
   - chart-example.local
-  # List of rules and filters applied.
   rules:
   - matches:
     - path:
         type: PathPrefix
         value: /headers
-  #   filters:
-  #   - type: RequestHeaderModifier
-  #     requestHeaderModifier:
-  #       set:
-  #       - name: My-Overwrite-Header
-  #         value: this-is-the-only-value
-  #       remove:
-  #       - User-Agent
-  # - matches:
-  #   - path:
-  #       type: PathPrefix
-  #       value: /echo
-  #     headers:
-  #     - name: version
-  #       value: v2
 
+# --------------------------------------------------------------------------
+# Resources
+# --------------------------------------------------------------------------
 resources:
   requests:
     cpu: 200m
@@ -119,7 +96,9 @@ resources:
     cpu: 500m
     memory: 512Mi
 
-# This is to setup the liveness and readiness probes more information can be found here: https://kubernetes.io/docs/tasks/configure-pod-container/configure-liveness-readiness-startup-probes/
+# --------------------------------------------------------------------------
+# Probes
+# --------------------------------------------------------------------------
 livenessProbe:
   httpGet:
     path: /
@@ -129,7 +108,9 @@ readinessProbe:
     path: /
     port: http
 
-# This section is for setting up autoscaling more information can be found here: https://kubernetes.io/docs/concepts/workloads/autoscaling/
+# --------------------------------------------------------------------------
+# Autoscaling
+# --------------------------------------------------------------------------
 autoscaling:
   enabled: true
   minReplicas: 3
@@ -137,34 +118,26 @@ autoscaling:
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
   
-  # Configure HPA to scale based on Datadog External Metrics (Requires Datadog deployment)
-  # Defaulting to false to rely on standard CPU utilization outside of production.
   datadogMetric:
     enabled: false
-    # Example query: Average latency for the app env:production
     query: "avg:trace.rack.request.duration.by.service.99p{env:production,service:merchant-core-api}"
-    targetValue: "100m" # E.g. Scale up if p99 latency exceeds 100 milliseconds
+    targetValue: "100m"
 
-# Additional volumes on the output Deployment definition.
+# --------------------------------------------------------------------------
+# Volumes
+# --------------------------------------------------------------------------
 volumes: []
-  # - name: foo
-  #   secret:
-  #     secretName: mysecret
-  #     optional: false
-
-# Additional volumeMounts on the output Deployment definition.
 volumeMounts: []
-  # - name: foo
-  #   mountPath: "/etc/foo"
-  #   readOnly: true
 
+# --------------------------------------------------------------------------
+# Scheduling
+# --------------------------------------------------------------------------
 nodeSelector: {}
-
 tolerations: []
 
+# Merchant-specific pod anti-affinity for HA across AZs and nodes
 affinity:
   podAntiAffinity:
-    # PREFERRED: Spread pods across multiple Availability Zones to survive AZ-level failures
     preferredDuringSchedulingIgnoredDuringExecution:
     - weight: 100
       podAffinityTerm:
@@ -175,8 +148,6 @@ affinity:
             values:
             - merchant-core-api-chart
         topologyKey: topology.kubernetes.io/zone
-    
-    # PREFERRED: Spread pods across different physical EC2 nodes to survive instance-level failures
     - weight: 50
       podAffinityTerm:
         labelSelector:
@@ -186,3 +157,21 @@ affinity:
             values:
             - merchant-core-api-chart
         topologyKey: kubernetes.io/hostname
+
+# --------------------------------------------------------------------------
+# RBAC - defines what the pod's service account can and cannot do
+# --------------------------------------------------------------------------
+rbac:
+  # Set to true to create a Role and RoleBinding for the service account
+  create: true
+  # rules define the allowed API permissions (least-privilege by default)
+  rules:
+    - apiGroups: [""]
+      resources: ["configmaps", "secrets"]
+      verbs: ["get", "list", "watch"]
+    - apiGroups: [""]
+      resources: ["pods"]
+      verbs: ["get", "list"]
+    - apiGroups: [""]
+      resources: ["events"]
+      verbs: ["create"]

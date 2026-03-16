@@ -1,0 +1,11 @@
+# Environments Specific Overrides
+# production.yaml
+
+autoscaling:
+  minReplicas: 5
+  maxReplicas: 20
+  
+  datadogMetric:
+    enabled: true
+    query: "avg:trace.rack.request.duration.by.service.99p{env:production,service:merchant-core-api}"
+    targetValue: "100m"

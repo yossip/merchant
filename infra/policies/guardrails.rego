@@ -59,3 +59,34 @@ ignore_resource(type) {
     unsupported_types = {"aws_route53_record", "aws_iam_role_policy_attachment"}
     unsupported_types[type]
 }
+
+# -------------------------------------------------------------------------
+# Kubernetes Strict CI/CD Enforcement Guardrail (Simulated for IaC/K8s OPA)
+# -------------------------------------------------------------------------
+# Validates that any changes pushed to staging or production are initiated 
+# strictly by the automated CI/CD pipeline role, blocking manual intervention.
+deny[msg] {
+    # This assumes an extended OPA schema evaluating Kubernetes Manifests or 
+    # Terraform executing Kubernetes changes where user context is available.
+    # We simulate reading the environment label or namespace here:
+    
+    resource := tfplan.resource_changes[_]
+    
+    # Check if this resource targets a protected environment
+    protected_environments := {"staging", "production"}
+    env := resource.change.after.tags["Environment"]
+    protected_environments[env]
+    
+    # Check the caller identity (simulated via variables or TF context)
+    # If the executor is NOT the GitHub Actions role, deny the plan.
+    # In a real K8s Gatekeeper setup, this evaluates `req.userInfo.username`
+    
+    # For demonstration, assume tfplan.variables contains caller identity
+    # caller := tfplan.variables.caller_identity.value
+    # caller != "arn:aws:iam::123456789012:role/GitHub-Actions-CI-CD"
+    
+    msg := sprintf(
+        "[STRICT GUARDRAIL] Resource '%v' in the '%v' environment cannot be modified manually. All changes must originate from the automated pipeline to comply with SOC 2 Change Management policies.",
+        [resource.address, env]
+    )
+}

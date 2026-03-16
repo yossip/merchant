@@ -141,9 +141,10 @@ autoscaling:
   targetCPUUtilizationPercentage: 80
   # targetMemoryUtilizationPercentage: 80
   
-  # Configure HPA to scale based on Datadog External Metrics
+  # Configure HPA to scale based on Datadog External Metrics (Requires Datadog deployment)
+  # Defaulting to false to rely on standard CPU utilization outside of production.
   datadogMetric:
-    enabled: true
+    enabled: false
     # Example query: Average latency for the app env:production
     query: "avg:trace.rack.request.duration.by.service.99p{env:production,service:merchant-core-api}"
     targetValue: "100m" # E.g. Scale up if p99 latency exceeds 100 milliseconds

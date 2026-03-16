@@ -133,15 +133,15 @@ jobs:
           # aws ec2 describe-instance-type-offerings --location-type availability-zone ...
           echo "AI capability check passed."
 
-      - name: Deploy utilizing Argo Rollouts or kubectl
+      - name: Deploy Canary (Helm / Argo Rollouts)
         env:
           ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
           IMAGE_TAG: ${{ github.sha }}
         run: |
-          # Example using Argo Rollouts plugin for progressive delivery
-          echo "Setting new image for deployment..."
-          # kubectl argo rollouts set image rollout merchant-core-api core-api=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
+          echo "Updating kubeconfig for production cluster..."
+          echo "Applying application via Helm..."
+          helm upgrade --install merchant-core-api ./merchant-core-api-chart -f ./merchant-core-api-chart/environments/production.yaml --namespace production --create-namespace --set image.repository=$ECR_REGISTRY/$ECR_REPOSITORY,image.tag=$IMAGE_TAG
           # 
           # Alternatively, basic deployment strategy:
-          kubectl set image deployment/merchant-core-api core-api=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -n production
-          kubectl rollout status deployment/merchant-core-api -n production --timeout=300s
+          # kubectl set image deployment/merchant-core-api core-api=$ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG -n production
+          # kubectl rollout status deployment/merchant-core-api -n production --timeout=300s

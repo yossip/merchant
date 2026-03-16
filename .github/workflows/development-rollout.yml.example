@@ -55,7 +55,7 @@ jobs:
       run: |
         echo "Updating kubeconfig for development cluster..."
         echo "Applying application via Helm..."
-        echo "helm upgrade --install merchant-core-api ./merchant-core-api-chart --namespace development --create-namespace"
+        echo "helm upgrade --install merchant-core-api ./merchant-core-api-chart -f ./merchant-core-api-chart/environments/development.yaml --namespace development --create-namespace"
 
     - name: Run Basic Health Checks
       run: |

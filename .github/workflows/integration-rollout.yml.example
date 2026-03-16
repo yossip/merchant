@@ -47,7 +47,7 @@ jobs:
       run: |
         echo "Updating kubeconfig for integration cluster..."
         echo "Applying application via Helm..."
-        echo "helm upgrade --install merchant-core-api ./merchant-core-api-chart --namespace integration --create-namespace"
+        echo "helm upgrade --install merchant-core-api ./merchant-core-api-chart -f ./merchant-core-api-chart/environments/integration.yaml --namespace integration --create-namespace"
 
     - name: Run Integration Tests
       run: |

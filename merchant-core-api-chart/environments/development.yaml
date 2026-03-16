@@ -1,0 +1,6 @@
+# Environments Specific Overrides
+# development.yaml
+
+autoscaling:
+  minReplicas: 2
+  maxReplicas: 5

@@ -22,7 +22,8 @@ Within EKS, admission controllers enforce policies in real-time.
 Service Control Policies (SCPs) define the maximum permissions for account members.
 *   **Region Restriction**: Prevents creating resources outside of approved regions.
 *   **Root User Restriction**: Denies use of the root user account for everyday tasks.
-*   **Service Restriction**: Disables unused or unapproved AWS services.
+*   **Strict CI/CD Enforcement (No Console Access)**: In the `staging` and `production` AWS accounts, SCPs strictly deny human IAM users from executing write/modify operations (`ec2:RunInstances`, `eks:CreateCluster`, `s3:PutObject` etc.) via the AWS Console or local CLI. 
+*   **Automated Deployments Only**: All infrastructure mutations and Kubernetes application rollouts (`helm upgrade`, `kubectl apply`) MUST originate from the authenticated GitHub Actions Continuous Deployment pipeline role. There is zero standing human access to production environments.
 
 ### 4. Continuous Monitoring (AWS Config & Security Hub)
 *   **AWS Config**: Continuously monitors and records AWS resource configurations, generating alerts if resources drift from a secure baseline.

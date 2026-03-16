@@ -50,7 +50,7 @@ jobs:
       run: |
         echo "Updating kubeconfig for staging cluster..."
         echo "Applying application via Helm..."
-        echo "helm upgrade --install merchant-core-api ./merchant-core-api-chart --namespace staging --create-namespace"
+        echo "helm upgrade --install merchant-core-api ./merchant-core-api-chart -f ./merchant-core-api-chart/environments/staging.yaml --namespace staging --create-namespace"
 
     - name: DAST (Dynamic Application Security Testing)
       run: |

@@ -1,0 +1,6 @@
+# Environments Specific Overrides
+# staging.yaml
+
+autoscaling:
+  minReplicas: 3
+  maxReplicas: 10
